@@ -1,0 +1,19 @@
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL, HEALTH_ENDPOINT } from "@/constants/endpoints";
+import type { HealthResponse } from "@/types/apiTypes";
+
+export const globalApi = createApi({
+  reducerPath: "globalQuery",
+  baseQuery: fetchBaseQuery({
+    baseUrl: API_BASE_URL,
+  }),
+  tagTypes: ["Auth", "Conversation", "Document", "Health"],
+  endpoints: (builder) => ({
+    health: builder.query<HealthResponse, void>({
+      query: () => HEALTH_ENDPOINT,
+      providesTags: ["Health"],
+    }),
+  }),
+});
+
+export const { useHealthQuery } = globalApi;
