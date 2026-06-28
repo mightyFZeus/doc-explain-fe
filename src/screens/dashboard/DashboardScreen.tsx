@@ -27,6 +27,7 @@ import {
 import {
   applyDocumentStatusEvent,
   getDocumentStatus,
+  isDocumentFailedStatus,
   isDocumentProcessingStatus,
   isDocumentReadyStatus,
 } from "@/lib/documentStatus";
@@ -281,6 +282,9 @@ export function DashboardScreen() {
       if (nextStatus && isDocumentReadyStatus(nextStatus)) {
         showToast("Document is ready to chat.", "success");
       }
+      if (nextStatus && isDocumentFailedStatus(nextStatus)) {
+        showToast(event.error || "Document processing failed.", "error");
+      }
     },
     [dispatch, showToast, user?.id],
   );
@@ -305,7 +309,14 @@ export function DashboardScreen() {
     setDocumentToDelete(document);
   };
 
-  const handleBlockedDocumentOpen = () => {
+  const handleBlockedDocumentOpen = (document: DocumentRecord) => {
+    const status = getDocumentStatus(document);
+
+    if (isDocumentFailedStatus(status)) {
+      showToast(document.error || "Document processing failed.", "error");
+      return;
+    }
+
     showToast("This document is still processing.");
   };
 

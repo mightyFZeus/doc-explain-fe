@@ -15,6 +15,9 @@ const config: Config = {
         line: "oklch(var(--line) / <alpha-value>)",
         paper: "oklch(var(--paper) / <alpha-value>)",
         inverse: "oklch(var(--inverse) / <alpha-value>)",
+        danger: "oklch(var(--danger) / <alpha-value>)",
+        "danger-line": "oklch(var(--danger-line) / <alpha-value>)",
+        "danger-surface": "oklch(var(--danger-surface) / <alpha-value>)",
       },
       boxShadow: {
         "product-frame": "0 28px 80px oklch(0.12 0.006 260 / 0.16)",

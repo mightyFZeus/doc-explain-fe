@@ -84,7 +84,7 @@ export function DeleteDocumentDialog({
         </p>
 
         {error ? (
-          <p className="mt-4 rounded-md border border-ink bg-canvas px-3 py-2 text-sm leading-6 text-ink">
+          <p className="mt-4 rounded-md border border-danger-line bg-danger-surface px-3 py-2 text-sm leading-6 text-danger">
             {error}
           </p>
         ) : null}

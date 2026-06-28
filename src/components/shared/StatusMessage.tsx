@@ -24,12 +24,12 @@ export function StatusMessage({
     <div
       className={cn(
         "flex items-start gap-3 rounded-md border border-line bg-paper px-4 py-3 text-sm leading-6 text-ink",
-        tone === "error" ? "border-ink" : "",
+        tone === "error" ? "border-danger-line bg-danger-surface text-danger" : "",
         className,
       )}
       role={tone === "error" ? "alert" : "status"}
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", tone === "error" ? "text-danger" : "")} />
       <div>{children}</div>
     </div>
   );

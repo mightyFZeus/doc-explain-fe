@@ -72,7 +72,7 @@ export function GuestTrialButton({
         {label}
       </Button>
       {!onError && localError ? (
-        <p className="mt-2 text-xs text-muted">{localError}</p>
+        <p className="mt-2 text-xs text-danger">{localError}</p>
       ) : null}
     </div>
   );

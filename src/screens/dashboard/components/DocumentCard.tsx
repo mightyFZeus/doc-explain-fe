@@ -48,7 +48,7 @@ const getStatusMeta = (status: string) => {
       icon: CircleAlert,
       label: "Needs review",
       loading: false,
-      tone: "outline" as const,
+      tone: "danger" as const,
     };
   }
 
@@ -88,7 +88,9 @@ function StatusPill({
         statusMeta.tone === "solid"
           ? "border-ink bg-ink text-inverse"
           : "border-line bg-canvas text-muted",
-        statusMeta.tone === "outline" ? "border-ink bg-paper text-ink" : "",
+        statusMeta.tone === "danger"
+          ? "border-danger-line bg-danger-surface text-danger"
+          : "",
       )}
     >
       <statusMeta.icon
@@ -157,6 +159,31 @@ function ProcessingStatus({
   );
 }
 
+function FailedStatus({
+  error,
+  status,
+}: {
+  error?: string;
+  status: string;
+}) {
+  return (
+    <div
+      aria-live="polite"
+      className="mt-5 rounded-2xl border border-danger-line bg-danger-surface p-3 text-danger"
+    >
+      <div className="flex items-start gap-2 text-xs">
+        <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <div className="min-w-0">
+          <p className="font-semibold">Processing failed</p>
+          <p className="mt-1 line-clamp-2 leading-5">
+            {error || getDocumentStatusLabel(status)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DocumentCard({
   document,
   isDeleting = false,
@@ -173,6 +200,8 @@ export function DocumentCard({
   const classification = getClassification(document);
   const status = getDocumentStatus(document);
   const isProcessing = isDocumentProcessingStatus(status);
+  const isFailed = isDocumentFailedStatus(status);
+  const isBlocked = isProcessing || isFailed;
   const title = document.title || document.originalFilename || "Untitled document";
   const detailItems = [
     {
@@ -183,12 +212,6 @@ export function DocumentCard({
       ? {
           label: "Pages",
           value: String(document.pageCount),
-        }
-      : undefined,
-    document.chunkCount
-      ? {
-          label: "Chunks",
-          value: String(document.chunkCount),
         }
       : undefined,
   ].filter(Boolean) as { label: string; value: string }[];
@@ -206,14 +229,14 @@ export function DocumentCard({
       </button>
 
       <Link
-        aria-disabled={isProcessing}
+        aria-disabled={isBlocked}
         className={cn(
           "focus-ring flex flex-1 flex-col rounded-[1.35rem] p-5 sm:p-6",
-          isProcessing ? "cursor-not-allowed" : "",
+          isBlocked ? "cursor-not-allowed" : "",
         )}
         href={ROUTES.document(document.id)}
         onClick={(event) => {
-          if (!isProcessing) {
+          if (!isBlocked) {
             return;
           }
 
@@ -245,6 +268,9 @@ export function DocumentCard({
         {isProcessing ? (
           <ProcessingStatus isLiveUpdating={isLiveUpdating} status={status} />
         ) : null}
+        {isFailed ? (
+          <FailedStatus error={document.error} status={status} />
+        ) : null}
 
         <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
           {detailItems.map((item) => (
@@ -258,11 +284,14 @@ export function DocumentCard({
             className={cn(
               "inline-flex shrink-0 items-center gap-1 font-semibold",
               isProcessing ? "text-muted" : "text-ink",
+              isFailed ? "text-danger" : "",
             )}
           >
-            {isProcessing ? "Processing" : "Open chat"}
+            {isProcessing ? "Processing" : isFailed ? "Failed" : "Open chat"}
             {isProcessing ? (
               <Clock3 className="h-3.5 w-3.5" />
+            ) : isFailed ? (
+              <CircleAlert className="h-3.5 w-3.5" />
             ) : (
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             )}

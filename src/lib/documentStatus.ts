@@ -52,6 +52,7 @@ export function applyDocumentStatusEvent(
     processingStatus: nextProcessingStatus,
     proccessingStatus: nextProcessingStatus ?? document.proccessingStatus,
     chunkCount: event.chunkCount ?? document.chunkCount,
+    error: event.error ?? document.error,
     updatedAt: event.updatedAt ?? document.updatedAt,
   };
 }

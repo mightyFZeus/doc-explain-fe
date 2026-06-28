@@ -234,8 +234,8 @@ export function DocumentChatScreen({ documentId }: { documentId: string }) {
       subtitle="Ask questions against this document only."
       title="Document chat"
     >
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div className="min-w-0">
+      <div className="sticky top-[7.75rem] z-20 -mx-4 mb-6 border-b border-line bg-canvas/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:top-16 lg:px-8">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <Link
             className="focus-ring inline-flex items-center gap-2 rounded-md text-sm font-medium text-muted transition-colors hover:text-ink"
             href={ROUTES.dashboard}
@@ -243,30 +243,32 @@ export function DocumentChatScreen({ documentId }: { documentId: string }) {
             <ArrowLeft className="h-4 w-4" />
             Back to documents
           </Link>
-          <div className="mt-4 min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
-              Document
-            </p>
-            <h1
-              className="mt-1 max-w-full truncate text-3xl font-semibold leading-tight text-ink sm:max-w-[52rem] sm:text-4xl"
-              title={documentTitle}
+          <div className="flex flex-wrap items-center gap-2">
+            {isGuestTrial ? (
+              <GuestQuestionNotice remainingQuestions={remainingGuestQuestions} />
+            ) : null}
+            <Button
+              icon={<Info className="h-4 w-4" />}
+              onClick={() => setIsInfoDrawerOpen(true)}
+              type="button"
+              variant="secondary"
             >
-              {documentTitle}
-            </h1>
+              Info
+            </Button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {isGuestTrial ? (
-            <GuestQuestionNotice remainingQuestions={remainingGuestQuestions} />
-          ) : null}
-          <Button
-            icon={<Info className="h-4 w-4" />}
-            onClick={() => setIsInfoDrawerOpen(true)}
-            type="button"
-            variant="secondary"
+      </div>
+      <div className="mx-auto mb-6 max-w-4xl">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
+            Document
+          </p>
+          <h1
+            className="mt-1 max-w-full truncate text-3xl font-semibold leading-tight text-ink sm:text-4xl"
+            title={documentTitle}
           >
-            Info
-          </Button>
+            {documentTitle}
+          </h1>
         </div>
       </div>
       {trialLimitNotice ? (

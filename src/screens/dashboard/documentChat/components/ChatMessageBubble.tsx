@@ -43,7 +43,9 @@ export function ChatMessageBubble({
           isUser
             ? "rounded-2xl bg-ink text-inverse"
             : "text-ink",
-          message.status === "error" ? "rounded-lg border border-ink bg-paper" : "",
+          message.status === "error"
+            ? "rounded-lg border border-danger-line bg-danger-surface text-danger"
+            : "",
         )}
       >
         {isStreaming ? (
@@ -74,7 +76,7 @@ export function ChatMessageBubble({
             {canRetry ? (
               <button
                 aria-label="Retry response"
-                className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-transparent text-muted transition-colors hover:border-line hover:text-ink disabled:opacity-45"
+                className="focus-ring grid h-8 w-8 place-items-center rounded-full border border-transparent text-danger transition-colors hover:border-danger-line hover:bg-paper disabled:opacity-45"
                 disabled={isRetryDisabled}
                 onClick={() => onRetry(message.id)}
                 title="Retry response"

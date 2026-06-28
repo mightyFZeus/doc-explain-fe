@@ -95,6 +95,7 @@ export interface DocumentRecord {
   updatedAt?: string;
   processingStatus?: string;
   proccessingStatus?: string;
+  error?: string;
 }
 
 export interface DocumentStatusEvent {

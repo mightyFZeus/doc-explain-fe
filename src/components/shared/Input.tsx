@@ -26,7 +26,7 @@ function FieldShell({ children, error, hint, label }: FieldShellProps) {
         <span
           className={cn(
             "block text-xs leading-5",
-            error ? "text-ink" : "text-muted",
+            error ? "text-danger" : "text-muted",
           )}
           id={descriptionId}
         >
@@ -54,7 +54,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               "focus-ring h-12 w-full rounded-md border border-line bg-canvas px-4 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink/40",
               rightElement ? "pr-12" : "",
-              error ? "border-ink" : "",
+              error ? "border-danger hover:border-danger" : "",
               className,
             )}
             id={id}
@@ -88,7 +88,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-describedby={describedBy}
           className={cn(
             "focus-ring min-h-32 w-full resize-y rounded-md border border-line bg-canvas px-4 py-3 text-sm leading-6 text-ink placeholder:text-muted transition-colors hover:border-ink/40",
-            error ? "border-ink" : "",
+            error ? "border-danger hover:border-danger" : "",
             className,
           )}
           id={id}
