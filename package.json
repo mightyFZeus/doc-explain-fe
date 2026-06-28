@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "video:render": "remotion render src/remotion/index.ts DocExplainDemo out/doc-explain-demo.mp4",
+    "video:studio": "remotion studio src/remotion/index.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "2.8.2",
@@ -19,6 +21,9 @@
     "react-redux": "9.2.0"
   },
   "devDependencies": {
+    "@remotion/cli": "^4.0.482",
+    "@remotion/media-utils": "^4.0.482",
+    "@remotion/renderer": "^4.0.482",
     "@types/node": "22.15.30",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
@@ -26,6 +31,7 @@
     "eslint": "9.28.0",
     "eslint-config-next": "^16.2.9",
     "postcss": "^8.5.10",
+    "remotion": "^4.0.482",
     "tailwindcss": "3.4.17",
     "typescript": "5.8.3"
   },

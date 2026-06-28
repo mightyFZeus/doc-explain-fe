@@ -7,14 +7,22 @@ import { ChatMessageBubble } from "./ChatMessageBubble";
 
 export function ChatMessageList({
   isLoadingHistory,
+  isRetryDisabled = false,
+  isSuggestionDisabled = false,
   isStreaming,
   messages,
   onRetryMessage,
+  onSuggestedQuestion,
+  suggestedQuestions = [],
 }: {
   isLoadingHistory?: boolean;
+  isRetryDisabled?: boolean;
+  isSuggestionDisabled?: boolean;
   isStreaming: boolean;
   messages: ChatMessage[];
   onRetryMessage?: (messageId: string) => void;
+  onSuggestedQuestion?: (question: string) => void;
+  suggestedQuestions?: string[];
 }) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,7 +38,7 @@ export function ChatMessageList({
           Loading conversation
         </div>
       ) : messages.length === 0 ? (
-        <div className="m-auto max-w-sm text-center">
+        <div className="m-auto max-w-xl text-center">
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg border border-line bg-paper">
             <MessageSquareText className="h-5 w-5" />
           </div>
@@ -41,11 +49,26 @@ export function ChatMessageList({
             Responses stay scoped to the uploaded document and cite chunks when
             the backend returns them.
           </p>
+          {suggestedQuestions.length > 0 ? (
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {suggestedQuestions.map((question) => (
+                <button
+                  className="focus-ring rounded-full border border-line bg-paper px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-ink disabled:opacity-45"
+                  disabled={isSuggestionDisabled || isStreaming}
+                  key={question}
+                  onClick={() => onSuggestedQuestion?.(question)}
+                  type="button"
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : (
         messages.map((message) => (
           <ChatMessageBubble
-            isRetryDisabled={isStreaming}
+            isRetryDisabled={isRetryDisabled || isStreaming}
             key={message.id}
             message={message}
             onRetry={onRetryMessage}

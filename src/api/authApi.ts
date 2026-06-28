@@ -2,6 +2,7 @@ import { AUTH_ENDPOINTS } from "@/constants/endpoints";
 import type {
   ApiEnvelope,
   ForgotPasswordPayload,
+  GuestTrialResponse,
   LoginPayload,
   LoginResponse,
   RegisterUserPayload,
@@ -9,6 +10,35 @@ import type {
   VerifyEmailPayload,
 } from "@/types/apiTypes";
 import { globalApi } from "./globalApi";
+
+type RegisterUserResponse = ApiEnvelope<User> | User;
+type LoginUserResponse = ApiEnvelope<LoginResponse> | LoginResponse;
+type GuestTrialApiResponse =
+  | ApiEnvelope<GuestTrialResponse>
+  | GuestTrialResponse;
+
+const hasData = <T>(response: T | ApiEnvelope<T>): response is ApiEnvelope<T> =>
+  Boolean(
+    response &&
+      typeof response === "object" &&
+      "data" in response &&
+      (response as ApiEnvelope<T>).data !== undefined,
+  );
+
+const normalizeRegisterResponse = (response: RegisterUserResponse) =>
+  hasData(response) ? response.data : response;
+
+const normalizeLoginResponse = (response: LoginUserResponse) => {
+  const session = hasData(response) ? response.data : response;
+
+  return {
+    ...session,
+    accessToken: session.accessToken ?? session.token,
+  };
+};
+
+const normalizeGuestTrialResponse = (response: GuestTrialApiResponse) =>
+  hasData(response) ? response.data : response;
 
 export const authApi = globalApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,7 +48,7 @@ export const authApi = globalApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: (response: ApiEnvelope<User>) => response.data,
+      transformResponse: normalizeRegisterResponse,
       invalidatesTags: ["Auth"],
     }),
     loginUser: builder.mutation<LoginResponse, LoginPayload>({
@@ -27,8 +57,15 @@ export const authApi = globalApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: (response: ApiEnvelope<LoginResponse> | LoginResponse) =>
-        "data" in response ? response.data : response,
+      transformResponse: normalizeLoginResponse,
+      invalidatesTags: ["Auth"],
+    }),
+    startGuestTrial: builder.mutation<GuestTrialResponse, void>({
+      query: () => ({
+        url: AUTH_ENDPOINTS.guest,
+        method: "POST",
+      }),
+      transformResponse: normalizeGuestTrialResponse,
       invalidatesTags: ["Auth"],
     }),
     requestPasswordReset: builder.mutation<{ status?: string }, ForgotPasswordPayload>({
@@ -56,5 +93,6 @@ export const {
   useLoginUserMutation,
   useRegisterUserMutation,
   useRequestPasswordResetMutation,
+  useStartGuestTrialMutation,
   useVerifyEmailMutation,
 } = authApi;

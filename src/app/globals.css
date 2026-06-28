@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --canvas: 0.985 0.004 260;
-  --paper: 0.965 0.004 260;
+  --canvas: 0.982 0.004 260;
+  --paper: 0.996 0.003 260;
   --ink: 0.13 0.006 260;
   --muted: 0.48 0.006 260;
-  --line: 0.86 0.004 260;
+  --line: 0.89 0.004 260;
   --inverse: 0.985 0.004 260;
 }
 
@@ -23,8 +23,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(90deg, oklch(0.13 0.006 260 / 0.04) 1px, transparent 1px),
-    linear-gradient(180deg, oklch(0.13 0.006 260 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.13 0.006 260 / 0.025) 1px, transparent 1px),
+    linear-gradient(180deg, oklch(0.13 0.006 260 / 0.025) 1px, transparent 1px),
     oklch(var(--canvas));
   background-size: 42px 42px;
   color: oklch(var(--ink));

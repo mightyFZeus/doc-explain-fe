@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogIn } from "lucide-react";
@@ -10,18 +10,37 @@ import { Input } from "@/components/shared/Input";
 import { StatusMessage } from "@/components/shared/StatusMessage";
 import { ROUTES } from "@/constants/routes";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setSession } from "@/store/slices/authSlice";
 import { AuthFooterLink } from "../components/AuthFooterLink";
 import { AuthFormShell } from "../components/AuthFormShell";
+import { PasswordInput } from "../components/PasswordInput";
+
+const getSafeNextRoute = () => {
+  if (typeof window === "undefined") {
+    return ROUTES.dashboard;
+  }
+
+  const nextRoute = new URLSearchParams(window.location.search).get("next");
+  return nextRoute?.startsWith("/") && !nextRoute.startsWith("//")
+    ? nextRoute
+    : ROUTES.dashboard;
+};
 
 export function LoginScreen() {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { isHydrated, token, user } = useAppSelector((state) => state.auth);
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (isHydrated && user && token) {
+      router.replace(getSafeNextRoute());
+    }
+  }, [isHydrated, router, token, user]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,18 +48,27 @@ export function LoginScreen() {
 
     try {
       const response = await loginUser({ email, password }).unwrap();
+      const sessionToken = response.accessToken ?? response.token ?? null;
+
+      if (!response.user || !sessionToken) {
+        throw new Error("Login response did not include a valid session.");
+      }
+
       dispatch(
         setSession({
-          user: response.user ?? null,
-          token: response.accessToken ?? response.token ?? null,
+          expiresAt: null,
+          limits: null,
+          trialUsage: null,
+          user: response.user,
+          token: sessionToken,
         }),
       );
-      router.push(ROUTES.dashboard);
+      router.replace(getSafeNextRoute());
     } catch (loginError) {
       setError(
         getApiErrorMessage(
           loginError,
-          "Login is not available yet.",
+          "Unable to log in. Check your details and try again.",
         ),
       );
     }
@@ -68,13 +96,12 @@ export function LoginScreen() {
           type="email"
           value={email}
         />
-        <Input
+        <PasswordInput
           autoComplete="current-password"
           label="Password"
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Enter your password"
           required
-          type="password"
           value={password}
         />
         <div className="flex justify-end">

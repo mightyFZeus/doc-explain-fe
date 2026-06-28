@@ -1,23 +1,29 @@
-import { ArrowRight, CheckCircle2, MessageSquareText, UploadCloud } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  MessageSquareText,
+  UploadCloud,
+} from "lucide-react";
 
 const steps = [
   {
     icon: UploadCloud,
     label: "Upload",
     title: "Add the source",
-    body: "Drop in the file and let Doc Explain prepare it for search.",
+    body: "Choose the file from the dashboard. It becomes its own workspace.",
   },
   {
     icon: CheckCircle2,
-    label: "Review",
-    title: "Check the context",
-    body: "See classification, readiness, and a short summary before opening chat.",
+    label: "Index",
+    title: "Watch readiness",
+    body: "Live status updates show when the document is still being processed.",
   },
   {
     icon: MessageSquareText,
     label: "Ask",
     title: "Continue the thread",
-    body: "Questions and answers stay with the document, including previous messages.",
+    body: "Questions, streaming answers, copy actions, and retries stay in the same chat.",
   },
 ];
 
@@ -51,17 +57,18 @@ function WorkflowBoard() {
             <p className="text-sm font-semibold text-ink">Recent documents</p>
             <div className="mt-4 space-y-3">
               {[
-                ["Board consent", "Legal", "Ready"],
-                ["Q2 vendor invoices", "Finance", "Ready"],
-                ["Migration notes", "Technical", "Processing"],
-              ].map(([title, type, status]) => (
+                ["Board consent", "Legal", "Ready", false],
+                ["Q2 vendor invoices", "Finance", "Ready", false],
+                ["Migration notes", "Technical", "Live indexing", true],
+              ].map(([title, type, status, isLoading]) => (
                 <div
                   className="rounded-xl border border-line bg-paper p-3"
-                  key={title}
+                  key={String(title)}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="truncate text-sm font-semibold text-ink">{title}</p>
-                    <span className="rounded-full border border-line px-2 py-0.5 text-[10px] font-medium text-muted">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-[10px] font-medium text-muted">
+                      {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
                       {status}
                     </span>
                   </div>
@@ -78,16 +85,16 @@ function WorkflowBoard() {
                   Current question
                 </p>
                 <p className="mt-1 text-lg font-semibold">
-                  What clause controls termination?
+                  Does it mention a dating policy?
                 </p>
               </div>
               <ArrowRight className="h-5 w-5 text-inverse/60" />
             </div>
             <div className="mt-5 rounded-2xl border border-inverse/15 bg-inverse/10 p-4">
               <p className="text-sm leading-7 text-inverse/78">
-                The document points to the termination section and requires
-                written notice before ending the agreement. The notice period is
-                defined in the same clause.
+                The available excerpts do not mention a dating policy. They
+                focus on sustainability, health and safety, quality management,
+                information security, and diversity.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {["Copy answer", "Retry if needed", "Keep history"].map((item) => (
@@ -117,13 +124,12 @@ export function WorkflowSection() {
               Workflow
             </p>
             <h2 className="mt-4 max-w-2xl text-5xl font-semibold leading-[1.02] text-ink">
-              From file to answer without changing rooms.
+              From waiting on a file to asking the next question.
             </h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-muted lg:justify-self-end">
-            The flow mirrors how people actually review documents: upload,
-            inspect what was understood, ask the question, then keep the result
-            close enough to copy or revisit.
+            Documents move from upload to indexing to chat without making the
+            user refresh the page or guess what is happening in the background.
           </p>
         </div>
 

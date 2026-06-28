@@ -1,4 +1,5 @@
 import { API_BASE_URL, DOCUMENT_ENDPOINTS } from "@/constants/endpoints";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type {
   ApiEnvelope,
   DeleteDocumentResponse,
@@ -11,6 +12,7 @@ import type {
   UploadDocumentResponse,
 } from "@/types/apiTypes";
 import { globalApi } from "./globalApi";
+import type { RootState } from "@/store/store";
 
 const readResponseError = async (response: Response) => {
   try {
@@ -109,6 +111,10 @@ type DocumentConversationsApiResponse =
   | DocumentConversationRecord[]
   | { conversations: DocumentConversationRecord[] };
 
+type UploadDocumentApiResponse =
+  | ApiEnvelope<UploadDocumentResponse>
+  | UploadDocumentResponse;
+
 const normalizeDocumentsResponse = (
   response: ListDocumentsResponse,
 ): DocumentRecord[] => {
@@ -162,6 +168,126 @@ const normalizeDocumentConversationsResponse = (
   return [];
 };
 
+const normalizeUploadDocumentResponse = (
+  response: UploadDocumentApiResponse,
+): UploadDocumentResponse => ("data" in response ? response.data : response);
+
+const uploadProgressHandlers = new Map<
+  string,
+  (progress: { loaded: number; percent: number; total: number }) => void
+>();
+
+export function registerUploadProgressHandler(
+  progressKey: string,
+  handler: (progress: { loaded: number; percent: number; total: number }) => void,
+) {
+  uploadProgressHandlers.set(progressKey, handler);
+
+  return () => {
+    uploadProgressHandlers.delete(progressKey);
+  };
+}
+
+const emitUploadProgress = (
+  progressKey: string | undefined,
+  progress: { loaded: number; percent: number; total: number },
+) => {
+  if (!progressKey) {
+    return;
+  }
+
+  uploadProgressHandlers.get(progressKey)?.(progress);
+};
+
+type UploadDocumentRequestError = FetchBaseQueryError;
+
+const isUploadDocumentRequestError = (
+  error: unknown,
+): error is UploadDocumentRequestError =>
+  Boolean(
+    error &&
+      typeof error === "object" &&
+      "status" in error &&
+      (typeof (error as { status?: unknown }).status === "number" ||
+        typeof (error as { status?: unknown }).status === "string"),
+  );
+
+const uploadDocumentWithProgress = (
+  url: string,
+  payload: UploadDocumentPayload,
+  token: string | null,
+  signal: AbortSignal,
+) =>
+  new Promise<UploadDocumentResponse>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const body = new FormData();
+    body.append("document", payload.file);
+
+    if (payload.title) {
+      body.append("title", payload.title);
+    }
+
+    if (payload.userId) {
+      body.append("userId", payload.userId);
+    }
+
+    xhr.open("POST", url);
+
+    if (token) {
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) {
+        return;
+      }
+
+      emitUploadProgress(payload.progressKey, {
+        loaded: event.loaded,
+        percent: Math.min(99, Math.round((event.loaded / event.total) * 100)),
+        total: event.total,
+      });
+    };
+
+    xhr.onload = () => {
+      try {
+        const response = JSON.parse(xhr.responseText || "{}") as
+          | UploadDocumentApiResponse
+          | { error?: string; message?: string };
+
+        if (xhr.status < 200 || xhr.status >= 300) {
+          reject({
+            data: response,
+            status: xhr.status,
+          });
+          return;
+        }
+
+        emitUploadProgress(payload.progressKey, {
+          loaded: payload.file.size,
+          percent: 100,
+          total: payload.file.size,
+        });
+        resolve(normalizeUploadDocumentResponse(response as UploadDocumentApiResponse));
+      } catch {
+        reject(xhr.statusText || "Unable to upload this document.");
+      }
+    };
+
+    xhr.onerror = () =>
+      reject({
+        error: xhr.statusText || "Unable to upload this document.",
+        status: "CUSTOM_ERROR",
+      });
+    xhr.onabort = () =>
+      reject({
+        error: "Upload cancelled.",
+        status: "CUSTOM_ERROR",
+      });
+    signal.addEventListener("abort", () => xhr.abort(), { once: true });
+    xhr.send(body);
+  });
+
 export const documentApi = globalApi.injectEndpoints({
   endpoints: (builder) => ({
     listDocuments: builder.query<DocumentRecord[], string | undefined>({
@@ -183,26 +309,36 @@ export const documentApi = globalApi.injectEndpoints({
           : [{ type: "Document" as const, id: "LIST" }],
     }),
     uploadDocument: builder.mutation<UploadDocumentResponse, UploadDocumentPayload>({
-      query: ({ file, title, userId }) => {
-        const body = new FormData();
-        body.append("document", file);
+      async queryFn(payload, api) {
+        try {
+          const token = (api.getState() as RootState).auth.token;
+          const data = await uploadDocumentWithProgress(
+            `${API_BASE_URL}${DOCUMENT_ENDPOINTS.upload}`,
+            payload,
+            token,
+            api.signal,
+          );
 
-        if (title) {
-          body.append("title", title);
+          return { data };
+        } catch (error) {
+          if (isUploadDocumentRequestError(error)) {
+            return { error };
+          }
+
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              error:
+                error instanceof Error
+                  ? error.message
+                  : typeof error === "string"
+                    ? error
+                    : "Unable to upload this document.",
+              data: error,
+            },
+          };
         }
-
-        if (userId) {
-          body.append("userId", userId);
-        }
-
-        return {
-          url: DOCUMENT_ENDPOINTS.upload,
-          method: "POST",
-          body,
-        };
       },
-      transformResponse: (response: ApiEnvelope<UploadDocumentResponse>) =>
-        response.data,
       invalidatesTags: [{ type: "Document", id: "LIST" }],
     }),
     deleteDocument: builder.mutation<DeleteDocumentResponse, string>({
@@ -213,6 +349,28 @@ export const documentApi = globalApi.injectEndpoints({
       }),
       transformResponse: (response: ApiEnvelope<DeleteDocumentResponse>) =>
         response.data,
+      async onQueryStarted(documentId, { dispatch, getState, queryFulfilled }) {
+        const userId = (getState() as RootState).auth.user?.id;
+        const patch = userId
+          ? dispatch(
+              documentApi.util.updateQueryData("listDocuments", userId, (draft) => {
+                const documentIndex = draft.findIndex(
+                  (document) => document.id === documentId,
+                );
+
+                if (documentIndex !== -1) {
+                  draft.splice(documentIndex, 1);
+                }
+              }),
+            )
+          : undefined;
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patch?.undo();
+        }
+      },
       invalidatesTags: (_result, _error, documentId) => [
         { type: "Document", id: "LIST" },
         { type: "Document", id: documentId },
@@ -230,11 +388,13 @@ export const documentApi = globalApi.injectEndpoints({
       ],
     }),
     searchDocument: builder.mutation<SearchDocumentResponse, SearchDocumentPayload>({
-      async queryFn(payload) {
+      async queryFn(payload, api) {
         try {
+          const token = (api.getState() as RootState).auth.token;
           const response = await fetch(`${API_BASE_URL}${DOCUMENT_ENDPOINTS.search}`, {
             method: "POST",
             headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
               "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),

@@ -1,5 +1,6 @@
-import { SettingsScreen } from "@/screens/dashboard/settings/SettingsScreen";
+import { redirect } from "next/navigation";
+import { ROUTES } from "@/constants/routes";
 
 export default function SettingsPage() {
-  return <SettingsScreen />;
+  redirect(ROUTES.dashboard);
 }

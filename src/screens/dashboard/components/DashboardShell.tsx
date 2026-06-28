@@ -1,19 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { FileText, Home, LogOut, PanelLeft, Settings } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { FileText, Loader2, LogOut, PanelLeft } from "lucide-react";
 import { Button } from "@/components/shared/Button";
 import { Logo } from "@/components/shared/Logo";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearAuth } from "@/store/slices/authSlice";
 
 const navItems = [
   { href: ROUTES.dashboard, label: "Documents", icon: FileText },
-  { href: ROUTES.settings, label: "Settings", icon: Settings },
-  { href: ROUTES.home, label: "Landing", icon: Home },
 ];
 
 export function DashboardShell({
@@ -27,6 +26,17 @@ export function DashboardShell({
 }) {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const router = useRouter();
+  const { isHydrated, token, user } = useAppSelector((state) => state.auth);
+  const isAuthorized = Boolean(isHydrated && token && user);
+
+  useEffect(() => {
+    if (!isHydrated || isAuthorized) {
+      return;
+    }
+
+    router.replace(`${ROUTES.login}?next=${encodeURIComponent(pathname)}`);
+  }, [isAuthorized, isHydrated, pathname, router]);
 
   const isActive = (href: string) => {
     if (href === ROUTES.dashboard) {
@@ -35,6 +45,17 @@ export function DashboardShell({
 
     return pathname === href;
   };
+
+  if (!isAuthorized) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-canvas px-4 text-ink">
+        <div className="flex items-center gap-3 rounded-full border border-line bg-paper px-4 py-3 text-sm font-medium text-muted shadow-[0_12px_40px_oklch(0.13_0.006_260_/_0.06)]">
+          <Loader2 className="h-4 w-4 animate-spin text-ink" />
+          Loading workspace
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-canvas text-ink lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -77,7 +98,10 @@ export function DashboardShell({
             </div>
             <Button
               icon={<LogOut className="h-4 w-4" />}
-              onClick={() => dispatch(clearAuth())}
+              onClick={() => {
+                dispatch(clearAuth());
+                router.replace(ROUTES.login);
+              }}
               size="sm"
               type="button"
               variant="secondary"

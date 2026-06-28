@@ -1,0 +1,17 @@
+Meet Doc Explain, a focused workspace for getting answers from the document in front of you.
+
+Start on the landing page, create a workspace, and upload a PDF, Word document, image, or note.
+
+On the dashboard, every upload becomes a clean card with its title, status, and classification.
+
+Now open a document. Previous conversation loads first, so the review continues from where it stopped.
+
+The user types a question in plain language: can the landlord collect rent yearly?
+
+When the message is sent, it moves into the thread, and the assistant response starts streaming back line by line. The answer stays tied to this document, with the source chunk visible when it completes.
+
+Once the response is done, the copy action appears. If a request fails, a retry control appears beside that failed response, so the user can try again without starting over.
+
+Settings keep the account practical: profile details, password reset, preferences, and sign out.
+
+Doc Explain keeps the source in the room, from upload to answer.

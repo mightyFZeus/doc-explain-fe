@@ -4,6 +4,18 @@ type ErrorWithData = {
   status?: number | string;
 };
 
+export const TRIAL_LIMIT_MESSAGE =
+  "Guest trial limit reached. Sign up or log in to continue.";
+
+export function isForbiddenApiError(error: unknown) {
+  return Boolean(
+    error &&
+      typeof error === "object" &&
+      "status" in error &&
+      (error as { status?: unknown }).status === 403,
+  );
+}
+
 export function getApiErrorMessage(
   error: unknown,
   fallback = "Something went wrong. Please try again.",
@@ -14,6 +26,10 @@ export function getApiErrorMessage(
 
   if (typeof error === "string") {
     return error;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
   }
 
   if (typeof error === "object" && error !== null) {

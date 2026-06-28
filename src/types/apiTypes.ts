@@ -11,7 +11,9 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
-  termsAccepted: boolean;
+  accountType?: "guest" | "user" | string;
+  guestExpiresAt?: string;
+  termsAccepted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -35,6 +37,23 @@ export interface LoginResponse {
   accessToken?: string;
 }
 
+export interface TrialLimits {
+  documents: number;
+  questions: number;
+}
+
+export interface TrialUsage {
+  documents: number;
+  questions: number;
+}
+
+export interface GuestTrialResponse {
+  expiresAt: string;
+  limits: TrialLimits;
+  token: string;
+  user: User;
+}
+
 export interface ForgotPasswordPayload {
   email: string;
 }
@@ -46,8 +65,15 @@ export interface VerifyEmailPayload {
 
 export interface UploadDocumentPayload {
   file: File;
+  progressKey?: string;
   title?: string;
   userId?: string;
+}
+
+export interface UploadDocumentProgress {
+  loaded: number;
+  percent: number;
+  total: number;
 }
 
 export interface DocumentRecord {
@@ -67,7 +93,18 @@ export interface DocumentRecord {
   version?: number;
   createdAt?: string;
   updatedAt?: string;
+  processingStatus?: string;
   proccessingStatus?: string;
+}
+
+export interface DocumentStatusEvent {
+  documentId: string;
+  status?: string;
+  processingStatus?: string;
+  proccessingStatus?: string;
+  chunkCount?: number;
+  error?: string;
+  updatedAt?: string;
 }
 
 export interface UploadDocumentResponse {

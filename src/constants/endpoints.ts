@@ -1,11 +1,15 @@
+const rawApiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://doc-explain.onrender.com";
+
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+  rawApiBaseUrl.replace(/\/v1\/?$/, "").replace(/\/$/, "") + "/v1";
 
 export const HEALTH_ENDPOINT = "/health";
 
 export const AUTH_ENDPOINTS = {
   register: "/auth/register",
   login: "/auth/login",
+  guest: "/auth/guest",
   forgotPassword: "/auth/forgot-password",
   verifyEmail: "/auth/verify-email",
 } as const;
@@ -16,4 +20,5 @@ export const DOCUMENT_ENDPOINTS = {
   conversations: "/document/conversations",
   upload: "/document/upload",
   search: "/document/search",
+  statusSocket: "/ws/document",
 } as const;

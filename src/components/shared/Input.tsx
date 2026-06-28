@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  type ReactNode,
   type InputHTMLAttributes,
   type TextareaHTMLAttributes,
   useId,
@@ -40,23 +41,32 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   hint?: string;
   error?: string;
+  rightElement?: ReactNode;
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, hint, label, ...props }, ref) => (
+  ({ className, error, hint, label, rightElement, ...props }, ref) => (
     <FieldShell error={error} hint={hint} label={label}>
       {(id, describedBy) => (
-        <input
-          aria-describedby={describedBy}
-          className={cn(
-            "focus-ring h-12 w-full rounded-md border border-line bg-canvas px-4 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink/40",
-            error ? "border-ink" : "",
-            className,
-          )}
-          id={id}
-          ref={ref}
-          {...props}
-        />
+        <span className="relative block">
+          <input
+            aria-describedby={describedBy}
+            className={cn(
+              "focus-ring h-12 w-full rounded-md border border-line bg-canvas px-4 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink/40",
+              rightElement ? "pr-12" : "",
+              error ? "border-ink" : "",
+              className,
+            )}
+            id={id}
+            ref={ref}
+            {...props}
+          />
+          {rightElement ? (
+            <span className="absolute inset-y-0 right-2 flex items-center">
+              {rightElement}
+            </span>
+          ) : null}
+        </span>
       )}
     </FieldShell>
   ),

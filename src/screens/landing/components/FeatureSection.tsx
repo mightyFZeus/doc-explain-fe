@@ -1,6 +1,7 @@
 import {
   CopyCheck,
   FileSearch,
+  Loader2,
   MessageSquareText,
   ShieldCheck,
   Tags,
@@ -9,51 +10,62 @@ import {
 const featureRows = [
   {
     icon: FileSearch,
-    title: "Open the exact file",
-    body: "Each document gets its own workspace, so answers stay tied to the source you selected.",
+    title: "Scoped to one source",
+    body: "The chat opens from a selected document, so answers do not drift across unrelated files.",
   },
   {
     icon: Tags,
-    title: "See the type before you ask",
-    body: "Classification, status, and summary help you understand what the system found.",
+    title: "Context before you ask",
+    body: "Classification, status, and summary show what was understood before the first prompt.",
   },
   {
     icon: MessageSquareText,
-    title: "Continue from history",
-    body: "Return to a document and pick up from the previous questions already asked there.",
+    title: "History stays attached",
+    body: "Open the document later and the previous messages come back with it.",
   },
   {
     icon: CopyCheck,
-    title: "Use the answer immediately",
-    body: "Copy a response, retry a failed one, and keep moving without leaving the page.",
+    title: "Actions stay close",
+    body: "Copy useful responses, retry failed ones, and keep working in the same view.",
   },
 ];
 
 function DocumentProfileMock() {
   return (
-    <div className="rounded-[1.35rem] border border-line bg-canvas p-3 shadow-[0_22px_70px_oklch(0.13_0.006_260_/_0.09)]">
-      <div className="overflow-hidden rounded-2xl border border-line bg-paper">
-        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+    <div className="rounded-[1.6rem] border border-line bg-canvas p-3 shadow-[0_22px_70px_oklch(0.13_0.006_260_/_0.08)]">
+      <div className="overflow-hidden rounded-[1.3rem] border border-line bg-paper">
+        <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
           <div>
             <p className="text-xs font-medium text-muted">Selected document</p>
             <h3 className="mt-1 max-w-xs truncate text-xl font-semibold text-ink">
-              Founder SAFE draft
+              Company policy.pdf
             </h3>
           </div>
-          <span className="rounded-full border border-ink bg-ink px-3 py-1 text-xs font-medium text-inverse">
-            Finance
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-ink bg-ink px-3 py-1 text-xs font-medium text-inverse">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Live indexing
           </span>
         </div>
 
-        <div className="grid gap-4 p-5 lg:grid-cols-[1fr_0.8fr]">
+        <div className="grid gap-4 p-5 lg:grid-cols-[1fr_0.82fr]">
           <div>
             <p className="text-sm font-semibold text-ink">What Doc Explain found</p>
             <p className="mt-3 text-sm leading-7 text-muted">
-              A financing agreement with conversion language, valuation cap
-              terms, investor rights, and signature requirements.
+              A company policy covering sustainability, health and safety,
+              environmental protection, quality management, information
+              security, and diversity.
             </p>
+            <div className="mt-5 rounded-2xl border border-line bg-canvas p-3">
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-ink">Processing status</span>
+                <span className="font-medium text-muted">Almost ready</span>
+              </div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/8">
+                <div className="h-full w-4/5 rounded-full bg-ink" />
+              </div>
+            </div>
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
-              {["Valuation cap", "Discount", "Conversion", "Investor rights"].map(
+              {["Sustainability", "Confidentiality", "Quality", "Diversity"].map(
                 (item) => (
                   <span
                     className="rounded-full border border-line bg-canvas px-3 py-2 text-xs font-medium text-ink"
@@ -69,11 +81,11 @@ function DocumentProfileMock() {
           <div className="rounded-2xl border border-line bg-ink p-4 text-inverse">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <ShieldCheck className="h-4 w-4" />
-              Source guard
+              No source, no claim
             </div>
             <p className="mt-4 text-sm leading-7 text-inverse/72">
-              When the file does not contain an answer, the assistant should say
-              that instead of filling the gap.
+              Ask about a missing dating policy and the answer says the document
+              does not mention one.
             </p>
             <div className="mt-6 space-y-2">
               <div className="h-2 rounded-full bg-inverse/30" />
@@ -100,12 +112,12 @@ export function FeatureSection() {
               Document intelligence
             </p>
             <h2 className="mt-4 max-w-xl text-5xl font-semibold leading-[1.02] text-ink">
-              Review the file before you trust the answer.
+              It knows when to answer, and when to stop.
             </h2>
             <p className="mt-5 max-w-lg text-sm leading-7 text-muted">
-              The workspace starts with visible document context, then moves into
-              chat. That keeps the experience grounded before the first question
-              is asked.
+              Doc Explain is not a blank chatbot with a file attached. The
+              document is the unit: its status, summary, chat, and history stay
+              together.
             </p>
 
             <div className="mt-8 divide-y divide-line border-y border-line">

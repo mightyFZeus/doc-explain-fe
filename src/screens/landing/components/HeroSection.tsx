@@ -1,28 +1,27 @@
-import { FileText, MessagesSquare, UploadCloud } from "lucide-react";
+import { ArrowRight, FileText, UploadCloud } from "lucide-react";
 import { LinkButton } from "@/components/shared/Button";
 import { ROUTES } from "@/constants/routes";
 import { ProductMockup } from "./ProductMockup";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden border-b border-line bg-ink px-4 pb-10 pt-14 text-inverse sm:px-6 lg:px-8 lg:pb-16 lg:pt-20">
-      <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(oklch(0.985_0.004_260_/_0.22)_1px,transparent_1px),linear-gradient(90deg,oklch(0.985_0.004_260_/_0.22)_1px,transparent_1px)] [background-size:48px_48px]" />
-      <div className="relative mx-auto max-w-7xl">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end xl:grid-cols-[minmax(0,1fr)_470px]">
+    <section className="relative overflow-hidden border-b border-line bg-canvas px-4 pb-12 pt-14 text-ink sm:px-6 lg:px-8 lg:pb-14 lg:pt-20">
+      <div className="relative mx-auto max-w-[88rem]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.58fr)] lg:items-end">
           <div>
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-inverse/20 bg-inverse/10 px-4 py-2 text-sm text-inverse/75">
-              <FileText className="h-4 w-4 text-inverse" />
-              Grounded answers from the document in front of you
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm text-muted shadow-[0_1px_0_oklch(0.13_0.006_260_/_0.04)]">
+              <FileText className="h-4 w-4 text-ink" />
+              Source-bound document chat
             </div>
-            <h1 className="max-w-5xl text-balance text-6xl font-semibold leading-[0.9] tracking-normal text-inverse sm:text-7xl lg:text-8xl">
-              Ask the file. Keep the source.
+            <h1 className="max-w-6xl text-balance text-6xl font-semibold leading-[0.9] tracking-normal text-ink sm:text-7xl lg:text-[6.8rem]">
+              Ask the file. Keep the proof in view.
             </h1>
           </div>
-          <div className="max-w-md lg:justify-self-end">
-            <p className="text-pretty text-lg leading-8 text-inverse/72">
-              Doc Explain turns long PDFs, contracts, notes, and images into a
-              focused workspace where every answer stays tied to the uploaded
-              document.
+          <div className="max-w-md lg:justify-self-end lg:pb-2">
+            <p className="text-pretty text-lg leading-8 text-muted">
+              Doc Explain turns long files into focused conversations. If the
+              answer is in the document, it shows up clearly. If it is not, the
+              chat says so.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:flex-col xl:flex-row xl:flex-nowrap">
               <LinkButton
@@ -30,15 +29,15 @@ export function HeroSection() {
                 href={ROUTES.signup}
                 showArrow
                 size="lg"
-                variant="inverse"
+                variant="secondary"
               >
-                Start with a document
+                Create account
               </LinkButton>
               <LinkButton
-                className="w-full border-inverse/25 text-inverse hover:bg-inverse/10 sm:w-auto"
+                className="w-full sm:w-auto"
                 href={ROUTES.dashboard}
                 size="lg"
-                variant="ghost"
+                variant="secondary"
               >
                 <UploadCloud className="h-4 w-4" />
                 Open dashboard
@@ -49,19 +48,20 @@ export function HeroSection() {
 
         <ProductMockup />
 
-        <div className="mt-8 grid gap-3 text-sm text-inverse/68 sm:grid-cols-3">
-          <div className="flex items-center gap-2">
-            <span className="h-px flex-1 bg-inverse/20" />
-            Upload
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-px flex-1 bg-inverse/20" />
-            Classify
-          </div>
-          <div className="flex items-center gap-2">
-            <MessagesSquare className="h-4 w-4 text-inverse/80" />
-            Continue the conversation
-          </div>
+        <div className="mx-auto mt-7 grid max-w-6xl gap-4 border-y border-line py-5 text-sm text-muted sm:grid-cols-3">
+          {[
+            ["Upload", "Start from a PDF, Word file, image, or note."],
+            ["Index live", "See when the document is ready without refreshing."],
+            ["Ask again", "Return to the same conversation history."],
+          ].map(([title, body]) => (
+            <div className="flex items-start gap-3" key={title}>
+              <ArrowRight className="h-4 w-4 text-ink/50" />
+              <div>
+                <p className="font-semibold text-ink">{title}</p>
+                <p className="mt-1 leading-6">{body}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

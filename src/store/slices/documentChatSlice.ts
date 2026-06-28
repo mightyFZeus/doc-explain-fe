@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { globalApi } from "@/api/globalApi";
 import { API_BASE_URL, DOCUMENT_ENDPOINTS } from "@/constants/endpoints";
+import { TRIAL_LIMIT_MESSAGE } from "@/lib/apiError";
+import type { RootState } from "@/store/store";
 import type { ChatMessage } from "@/types/apiTypes";
 
 interface DocumentChatState {
@@ -31,17 +33,31 @@ export const streamDocumentAnswer = createAsyncThunk<
   }
 >(
   "documentChat/streamDocumentAnswer",
-  async ({ assistantMessageId, documentId, query }, { dispatch, rejectWithValue }) => {
+  async (
+    { assistantMessageId, documentId, query },
+    { dispatch, getState, rejectWithValue },
+  ) => {
     try {
+      const token = (getState() as RootState).auth.token;
+
+      if (!token) {
+        throw new Error("Please log in again before searching this document.");
+      }
+
       const response = await fetch(`${API_BASE_URL}${DOCUMENT_ENDPOINTS.search}`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ documentId, query }),
       });
 
       if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error(TRIAL_LIMIT_MESSAGE);
+        }
+
         throw new Error(await readError(response));
       }
 

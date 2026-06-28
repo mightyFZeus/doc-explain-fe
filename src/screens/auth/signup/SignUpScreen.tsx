@@ -1,46 +1,104 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus } from "lucide-react";
-import { useRegisterUserMutation } from "@/api/authApi";
+import { useLoginUserMutation, useRegisterUserMutation } from "@/api/authApi";
 import { Button } from "@/components/shared/Button";
 import { Checkbox } from "@/components/shared/Checkbox";
 import { Input } from "@/components/shared/Input";
 import { StatusMessage } from "@/components/shared/StatusMessage";
 import { ROUTES } from "@/constants/routes";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { useAppDispatch } from "@/store/hooks";
-import { setUser } from "@/store/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setSession } from "@/store/slices/authSlice";
 import { AuthFooterLink } from "../components/AuthFooterLink";
 import { AuthFormShell } from "../components/AuthFormShell";
+import { PasswordInput } from "../components/PasswordInput";
+import {
+  PasswordRequirementList,
+  type PasswordValidation,
+} from "../components/PasswordRequirementList";
+
+const getPasswordValidation = (password: string): PasswordValidation => ({
+  isEightChar: password.length >= 12,
+  isNum: /.*\d.*/.test(password),
+  isSpecial: /.*[!@#$%^&*()_+{}[\]:;<>,.?~\\/-].*/.test(password),
+  hasUppercase: /[A-Z]/.test(password),
+  hasLowercase: /[a-z]/.test(password) && password.length > 0,
+});
 
 export function SignUpScreen() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const [registerUser, { isLoading }] = useRegisterUserMutation();
+  const { isHydrated, token, user } = useAppSelector((state) => state.auth);
+  const [registerUser, { isLoading: isRegistering }] = useRegisterUserMutation();
+  const [loginUser, { isLoading: isLoggingIn }] = useLoginUserMutation();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
+  const isLoading = isRegistering || isLoggingIn;
+  const passwordValidation = useMemo(
+    () => getPasswordValidation(password),
+    [password],
+  );
+  const isPasswordValid = Object.values(passwordValidation).every(Boolean);
+  const doPasswordsMatch = password === confirmPassword;
+  const canSubmit =
+    Boolean(fullName.trim() && email.trim()) &&
+    isPasswordValid &&
+    doPasswordsMatch &&
+    termsAccepted &&
+    !isLoading;
+
+  useEffect(() => {
+    if (isHydrated && user && token) {
+      router.replace(ROUTES.dashboard);
+    }
+  }, [isHydrated, router, token, user]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
+    if (!isPasswordValid) {
+      setError("Password must meet every requirement below.");
+      return;
+    }
+
+    if (!doPasswordsMatch) {
+      setError("Password and confirmation must match.");
+      return;
+    }
+
     try {
-      const user = await registerUser({
+      const registeredUser = await registerUser({
         confirmPassword,
         email,
         fullName,
         password,
         termsAccepted,
       }).unwrap();
+      const session = await loginUser({ email, password }).unwrap();
+      const sessionToken = session.accessToken ?? session.token ?? null;
 
-      dispatch(setUser(user));
-      router.push(ROUTES.dashboard);
+      if (!sessionToken) {
+        throw new Error("Your account was created, but sign in did not return a session.");
+      }
+
+      dispatch(
+        setSession({
+          expiresAt: null,
+          limits: null,
+          trialUsage: null,
+          token: sessionToken,
+          user: session.user ?? registeredUser,
+        }),
+      );
+      router.replace(ROUTES.dashboard);
     } catch (registrationError) {
       setError(getApiErrorMessage(registrationError));
     }
@@ -76,24 +134,28 @@ export function SignUpScreen() {
           type="email"
           value={email}
         />
-        <Input
+        <PasswordInput
           autoComplete="new-password"
           label="Password"
           maxLength={72}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Create a password"
           required
-          type="password"
           value={password}
         />
-        <Input
+        <PasswordRequirementList validation={passwordValidation} />
+        <PasswordInput
           autoComplete="new-password"
+          error={
+            confirmPassword && !doPasswordsMatch
+              ? "Password and confirmation must match."
+              : undefined
+          }
           label="Confirm password"
           maxLength={72}
           onChange={(event) => setConfirmPassword(event.target.value)}
           placeholder="Repeat your password"
           required
-          type="password"
           value={confirmPassword}
         />
         <Checkbox
@@ -105,6 +167,7 @@ export function SignUpScreen() {
         {error ? <StatusMessage tone="error">{error}</StatusMessage> : null}
         <Button
           className="w-full"
+          disabled={!canSubmit}
           icon={<UserPlus className="h-4 w-4" />}
           isLoading={isLoading}
           size="lg"

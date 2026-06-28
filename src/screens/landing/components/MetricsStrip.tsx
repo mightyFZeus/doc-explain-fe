@@ -1,18 +1,18 @@
 const proofPoints = [
   {
-    label: "Files",
+    label: "Upload",
     value: "PDF, Word, text, Markdown, PNG, and JPG",
   },
   {
-    label: "Context",
-    value: "Classification and summary before chat",
+    label: "Index",
+    value: "Live document readiness without manual refresh",
   },
   {
-    label: "Answers",
+    label: "Ask",
     value: "Streaming responses with copy and retry actions",
   },
   {
-    label: "Memory",
+    label: "Return",
     value: "Previous messages return with the document",
   },
 ];
@@ -24,15 +24,15 @@ export function MetricsStrip() {
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-inverse/55">
-              Product proof
+              What stays visible
             </p>
             <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight">
-              The document remains the center of the experience.
+              A document workspace, not a blank chatbot.
             </h2>
           </div>
           <p className="max-w-md text-sm leading-7 text-inverse/62">
-            Everything visible in the product points back to the selected file:
-            its status, its classification, its chat, and its history.
+            Status, classification, message history, and response actions remain
+            tied to the selected file.
           </p>
         </div>
 
